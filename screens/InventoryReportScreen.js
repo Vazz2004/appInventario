@@ -51,8 +51,8 @@ export default function InventoryReportScreen() {
       <Text style={styles.title}>Informe Técnico de Inventario</Text>
       <View style={styles.summaryContainer}>
         <Text style={styles.summaryText}>Total de productos registrados: {products.length}</Text>
-        <Text style={styles.summaryText}>Total de unidades en inventario: {calculateTotalQuantity()}</Text>
       </View>
+      <Text style={styles.summaryText}>Total de unidades en inventario: {calculateTotalQuantity()}</Text>
       <FlatList
         data={products}
         renderItem={renderItem}
