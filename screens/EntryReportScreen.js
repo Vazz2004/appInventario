@@ -2,10 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, TextInput, Modal } from 'react-native';
 import axios from 'axios';
 
+const obtenerFechaActual = () => {
+  const fecha = new Date();
+  
+  const año = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Los meses son de 0 a 11, por eso se suma 1
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  
+  const horas = String(fecha.getHours()).padStart(2, '0');
+  const minutos = String(fecha.getMinutes()).padStart(2, '0');
+  const segundos = String(fecha.getSeconds()).padStart(2, '0');
+  
+  return `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`
+};
+
 export default function EntryReportScreen() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible2, setIsModalVisible2] = useState(false);
+  const [dataResivida , setDataResivida] = useState({
+    nombre:'',
+    descripcion:'',
+    can:'',
+    codigo:'',
+    precio:'',
+    id:''
+  })
+  const [ventaProduct, setVentaProduct] = useState({
+    id_producto:'',
+    cantidad:'',
+    precio_unitario:'',
+    fecha_venta:obtenerFechaActual()
+  })
+
 
   const fetchProducts = async () => {
     try {
@@ -24,6 +54,29 @@ export default function EntryReportScreen() {
   useEffect(() => {
     fetchProducts();
   }, []);
+  const vender = async (id, nombre, descripcion, precioUnitario, cantidad , codigo , precio) => {
+    // Actualizar el estado de ventaProduct
+    setVentaProduct(prevState => ({
+      ...prevState,
+      id_producto: id,
+      precio_unitario:precioUnitario
+    }))
+    console.log(cantidad)
+
+    setDataResivida(
+      (prevState => ({
+        ...prevState,
+        nombre:nombre,
+        descripcion:descripcion,
+        can:cantidad,
+        codigo:codigo,
+        precio:precio,
+        id:id
+      }))
+     );
+    setIsModalVisible2(true);
+  }
+  
 
   const deleteProduct = async (productId) => {
     try {
@@ -59,9 +112,43 @@ export default function EntryReportScreen() {
     setIsModalVisible(true);
   };
 
+  const venta = async () => {
+    try {
+      console.log(dataResivida)
+      if(ventaProduct.cantidad > dataResivida.can){
+        alert('No hay suficinetes unidades disponibles')
+      }else{
+        await axios.post(`http://192.168.10.12:5000/producto/detalle-venta`, ventaProduct);
+        setIsModalVisible2(false);
+        fetchProducts(); // Volver a cargar los productos después de actualizar
+
+        const resta = (dataResivida.can - ventaProduct.cantidad )
+        try {
+          await axios.patch(`http://192.168.10.12:5000/producto/update-product-basic/${dataResivida.id}`, {
+            nombreProducto:dataResivida.nombre,
+            codigoProducto:dataResivida.codigo,
+            descripcion:dataResivida.descripcion,
+            precio:dataResivida.precio,
+            cantidad: resta
+          });
+          setIsModalVisible(false);
+          fetchProducts(); // Volver a cargar los productos después de actualizar
+        } catch (error) {
+          console.error('Error al actualizar el producto:', error.message);
+          Alert.alert('Error', 'Hubo un problema al actualizar el producto.');
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error al actualizar el producto:', error.message);
+      Alert.alert('Error', 'Hubo un problema al actualizar el producto.');
+    }
+  };
+
+
   const updateProduct = async () => {
     try {
-      await axios.patch(`http://192.168.10.12:5000/producto/actualizar-producto/${selectedProduct.id_producto}`, selectedProduct);
+      await axios.patch(`http://192.168.10.12:5000/producto/update-product-basic/${selectedProduct.id_producto}`, selectedProduct);
       setIsModalVisible(false);
       fetchProducts(); // Volver a cargar los productos después de actualizar
     } catch (error) {
@@ -73,7 +160,7 @@ export default function EntryReportScreen() {
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <Text style={styles.itemText}>Producto: {item.nombreProducto}</Text>
-      <Text style={styles.itemText}>Código: {item.codigoProduct}</Text>
+      <Text style={styles.itemText}>Código: {item.codigoProducto}</Text>
       <Text style={styles.itemText}>Descripción: {item.descripcion}</Text>
       <Text style={styles.itemText}>Precio: {item.precio}</Text>
       <Text style={styles.itemText}>Cantidad: {item.cantidad}</Text>
@@ -89,6 +176,13 @@ export default function EntryReportScreen() {
           onPress={() => confirmDelete(item.id_producto)}
         >
           <Text style={styles.buttonText}>Eliminar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.venderButton}
+          onPress={() => vender(item.id_producto, item.nombreProducto , item.descripcion , item.precio , item.cantidad , item.codigoProducto , item.precio) }
+        >
+          <Text style={styles.buttonText}>Vender</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -120,8 +214,8 @@ export default function EntryReportScreen() {
             <TextInput
               style={styles.input}
               placeholder="Código"
-              value={selectedProduct?.codigoProduct.toString()}
-              onChangeText={(text) => setSelectedProduct({ ...selectedProduct, codigoProduct: text })}
+              value={selectedProduct?.codigoProducto.toString()}
+              onChangeText={(text) => setSelectedProduct({ ...selectedProduct, codigoProducto: text })}
               keyboardType="numeric"
             />
             <TextInput
@@ -154,6 +248,41 @@ export default function EntryReportScreen() {
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setIsModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
+      <Modal
+        visible={isModalVisible2}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Vender Producto</Text>
+            <Text style={styles.modalTitle}>{dataResivida.nombre}, {dataResivida.descripcion} </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Cantidad"
+              value={ventaProduct.cantidad}
+              onChangeText={(text) => setVentaProduct({ ...ventaProduct, cantidad: text })}
+              keyboardType="numeric"
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={venta}
+              >
+                <Text style={styles.modalButtonText}>Vender</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setIsModalVisible2(false)}
               >
                 <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
@@ -206,6 +335,12 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  venderButton:{
+    backgroundColor: '#74D3AE',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
