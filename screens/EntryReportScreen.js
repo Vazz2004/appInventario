@@ -36,6 +36,14 @@ export default function EntryReportScreen() {
     fecha_venta:obtenerFechaActual()
   })
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0, // Opcional: ajusta según tus necesidades
+    }).format(amount);
+  };
+
 
   const fetchProducts = async () => {
     try {
@@ -162,7 +170,7 @@ export default function EntryReportScreen() {
       <Text style={styles.itemText}>Producto: {item.nombreProducto}</Text>
       <Text style={styles.itemText}>Código: {item.codigoProducto}</Text>
       <Text style={styles.itemText}>Descripción: {item.descripcion}</Text>
-      <Text style={styles.itemText}>Precio: {item.precio}</Text>
+      <Text style={styles.itemText}>Precio: { formatCurrency(item.precio)} COP</Text>
       <Text style={styles.itemText}>Cantidad: {item.cantidad}</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
