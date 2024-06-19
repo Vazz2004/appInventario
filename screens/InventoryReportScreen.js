@@ -21,7 +21,7 @@ export default function InventoryReportScreen() {
 
   const fetchInventoryReport = async () => {
     try {
-      const res = await axios.get('http://192.168.10.12:5000/producto/ver', {
+      const res = await axios.get('https://back-end-app-inventory.vercel.app/producto/ver', {
         headers: {
           'Content-Type': 'application/json',
         },

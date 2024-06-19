@@ -21,7 +21,7 @@ export default function SalesReportScreen() {
 
   const fetchSalesReport = async () => {
     try {
-      const res = await axios.get('http://192.168.10.12:5000/producto/ver-venta', {
+      const res = await axios.get('https://back-end-app-inventory.vercel.app/producto/ver-venta', {
         headers: {
           'Content-Type': 'application/json',
         },

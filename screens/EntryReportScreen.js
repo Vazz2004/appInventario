@@ -47,7 +47,7 @@ export default function EntryReportScreen() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://192.168.10.12:5000/producto/ver', {
+      const res = await axios.get('https://back-end-app-inventory.vercel.app/producto/ver', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -88,7 +88,7 @@ export default function EntryReportScreen() {
 
   const deleteProduct = async (productId) => {
     try {
-      await axios.patch(`http://192.168.10.12:5000/producto/desactivar-product/${productId}`);
+      await axios.patch(`https://back-end-app-inventory.vercel.app/producto/desactivar-product/${productId}`);
       fetchProducts(); // Volver a cargar los productos después de eliminar
     } catch (error) {
       console.error('Error al eliminar el producto:', error.message);
@@ -126,13 +126,13 @@ export default function EntryReportScreen() {
       if(ventaProduct.cantidad > dataResivida.can){
         alert('No hay suficinetes unidades disponibles')
       }else{
-        await axios.post(`http://192.168.10.12:5000/producto/detalle-venta`, ventaProduct);
+        await axios.post(`https://back-end-app-inventory.vercel.app/producto/detalle-venta`, ventaProduct);
         setIsModalVisible2(false);
         fetchProducts(); // Volver a cargar los productos después de actualizar
 
         const resta = (dataResivida.can - ventaProduct.cantidad )
         try {
-          await axios.patch(`http://192.168.10.12:5000/producto/update-product-basic/${dataResivida.id}`, {
+          await axios.patch(`https://back-end-app-inventory.vercel.app/producto/update-product-basic/${dataResivida.id}`, {
             nombreProducto:dataResivida.nombre,
             codigoProducto:dataResivida.codigo,
             descripcion:dataResivida.descripcion,
@@ -156,7 +156,7 @@ export default function EntryReportScreen() {
 
   const updateProduct = async () => {
     try {
-      await axios.patch(`http://192.168.10.12:5000/producto/update-product-basic/${selectedProduct.id_producto}`, selectedProduct);
+      await axios.patch(`https://back-end-app-inventory.vercel.app/producto/update-product-basic/${selectedProduct.id_producto}`, selectedProduct);
       setIsModalVisible(false);
       fetchProducts(); // Volver a cargar los productos después de actualizar
     } catch (error) {
