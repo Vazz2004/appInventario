@@ -19,6 +19,7 @@ export default function SalesReportScreen() {
     }).format(amount);
   };
 
+  console.log('Sales', sales)
   const fetchSalesReport = async () => {
     try {
       const res = await axios.get('https://back-end-app-inventory.vercel.app/producto/ver-venta', {
@@ -33,7 +34,8 @@ export default function SalesReportScreen() {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit'
-        })
+        }),
+        subtotal: parseFloat(sale.subtotal) || 0 // Asegúrate de que subtotal sea un número
       }));
       setSales(formattedSales);
     } catch (error) {
@@ -41,6 +43,8 @@ export default function SalesReportScreen() {
       Alert.alert('Error', 'Hubo un problema al obtener el informe de ventas.');
     }
   };
+
+  const total = sales.reduce((acc, sale) => acc + sale.subtotal, 0);
 
   const generatePDF = async () => {
     const htmlContent = generateHTML(); // Generar el contenido HTML para el PDF
@@ -124,11 +128,14 @@ export default function SalesReportScreen() {
                 <div class="technicalDetails">
                   <p><strong>Nombre del Producto:</strong> ${sale.nombreProducto}</p>
                   <p><strong>Cantidad:</strong> ${sale.cantidad}</p>
-                  <p><strong>Subtotal:</strong> ${sale.subtotal} USD</p>
+                                    <p><strong>Valor unitario:</strong> ${formatCurrency(sale.subtotal /sale.cantidad)} COP</p>
+                  <p><strong>Subtotal:</strong> ${formatCurrency(sale.subtotal)} COP</p>
                 </div>
               </li>
             `).join('')}
           </ul>
+
+          <p><strong>Total vendido</strong>  ${formatCurrency(total)} COP</p>
         </body>
       </html>
     `;
@@ -137,6 +144,7 @@ export default function SalesReportScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Informe de Ventas</Text>
+      <Text style={styles.itemTitle} >Total vendido: {formatCurrency(total)}</Text>
       <FlatList
         data={sales}
         renderItem={({ item }) => (
@@ -145,7 +153,8 @@ export default function SalesReportScreen() {
             <View style={styles.technicalDetails}>
               <Text style={styles.detailText}>Nombre del Producto: {item.nombreProducto}</Text>
               <Text style={styles.detailText}>Cantidad: {item.cantidad}</Text>
-              <Text style={styles.detailText}>Subtotal: { formatCurrency( item.subtotal)} COP</Text>
+              <Text style={styles.detailText}>Subtotal: {formatCurrency(item.subtotal)} COP</Text>
+              <Text style={styles.detailText}>Valor producto unitario: {formatCurrency(item.subtotal / item.cantidad)} COP</Text>
             </View>
           </View>
         )}
@@ -194,12 +203,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     padding: 10,
     borderRadius: 5,
-  },
-  detailTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#4caf50',
   },
   detailText: {
     fontSize: 14,

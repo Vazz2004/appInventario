@@ -124,7 +124,7 @@ export default function EntryReportScreen() {
     try {
       console.log(dataResivida)
       if(ventaProduct.cantidad > dataResivida.can){
-        alert('No hay suficinetes unidades disponibles')
+        alert('No hay suficientes unidades disponibles')
       }else{
         await axios.post(`https://back-end-app-inventory.vercel.app/producto/detalle-venta`, ventaProduct);
         setIsModalVisible2(false);
@@ -172,6 +172,7 @@ export default function EntryReportScreen() {
       <Text style={styles.itemText}>Descripción: {item.descripcion}</Text>
       <Text style={styles.itemText}>Precio: { formatCurrency(item.precio)} COP</Text>
       <Text style={styles.itemText}>Cantidad: {item.cantidad}</Text>
+      <Text style={styles.itemText}>Total: { formatCurrency(item.precio * item.cantidad) }  </Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.editButton}

@@ -14,6 +14,7 @@ export default function InventoryReportScreen() {
       minimumFractionDigits: 0, // Opcional: ajusta según tus necesidades
     }).format(amount);
   };
+  const total = products.reduce((acc, product) => acc + product.precio * product.cantidad, 0);
 
   useEffect(() => {
     fetchInventoryReport();
@@ -112,9 +113,15 @@ export default function InventoryReportScreen() {
                 <p><strong>Precio Unitario:</strong> ${formatCurrency(product.precio)} COP</p>
                   <p><strong>Cantidad en Stock:</strong> ${product.cantidad}</p>
                   <p><strong>Descripción:</strong> ${product.descripcion}</p>
+                  <p><strong>Total</strong> ${formatCurrency(product.cantidad * product.precio)}</p>
+                  
                 </div>
               </li>
             `).join('')}
+
+
+            <p><strong>Total Invertido</strong> Total invertido ${formatCurrency(total)}</p>
+
           </ul>
         </body>
       </html>
@@ -129,6 +136,9 @@ export default function InventoryReportScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Informe Técnico de Inventario</Text>
+  
+  <Text  style={styles.itemTitle} > Total Invertido {formatCurrency(total)}</Text>
+
       <FlatList
         data={products}
         renderItem={({ item }) => (
@@ -139,6 +149,7 @@ export default function InventoryReportScreen() {
         <Text style={styles.detailText}>Precio Unitario: {formatCurrency(item.precio)} </Text>
               <Text style={styles.detailText}>Cantidad en Stock: {item.cantidad}</Text>
               <Text style={styles.detailText}>Descripción: {item.descripcion}</Text>
+              <Text style={styles.detailText}>Total: {formatCurrency(item.cantidad * item.precio)}</Text>
             </View>
           </View>
         )}
